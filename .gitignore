@@ -41,3 +41,4 @@ svg-inkscape/
 
 code/grafana_dashboard
 !code/grafana_dashboard/grafana.db
+Cargo.lock

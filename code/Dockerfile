@@ -13,7 +13,7 @@ RUN ["bash"]
 
 FROM debian:bookworm AS load_automaton
 RUN apt-get update -qq -y && \
-    apt-get install -qq -y --no-install-recommends libssl3 ca-certificates && \
+    apt-get install -qq -y --no-install-recommends libssl3 ca-certificates curl && \
     rm -rf /var/lib/apt/lists/* /tmp/*
 COPY --from=builder /opt/reciper/target/release/load_automaton /usr/local/bin
 COPY .env ./
@@ -41,7 +41,7 @@ LABEL service=store_automaton
 
 FROM debian:bookworm AS web_server
 RUN apt-get update -qq -y && \
-    apt-get install -qq -y --no-install-recommends libssl3 ca-certificates curl && \
+    apt-get install -qq -y --no-install-recommends libssl3 ca-certificates && \
     rm -rf /var/lib/apt/lists/* /tmp/*
 COPY --from=builder /opt/reciper/target/release/web_server /usr/local/bin
 COPY .env ./

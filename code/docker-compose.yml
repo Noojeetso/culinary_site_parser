@@ -57,7 +57,7 @@ services:
     environment:
       MONGO_REPLICA_HOST: mongodb
     healthcheck:
-        test: echo 'db.runCommand("ping").ok' | mongosh localhost:27017/test --quiet
+      test: echo 'db.runCommand("ping").ok' | mongosh localhost:27017/test --quiet
 
   load_automaton:
     image: load_automaton
@@ -73,6 +73,12 @@ services:
       - .env
     environment:
       RUST_BACKTRACE: 1
+    healthcheck:
+      test: curl localhost:3031/health | grep 'Healthy!' || exit 1
+      start_period: 5s
+      interval: 15s
+      timeout: 10s
+      retries: 4
     depends_on:
       influxdb2:
         condition: service_healthy
@@ -93,6 +99,12 @@ services:
       - "3032:3032"
     env_file:
       - .env
+    healthcheck:
+      test: curl localhost:3032/health | grep 'Healthy!' || exit 1
+      start_period: 5s
+      interval: 15s
+      timeout: 10s
+      retries: 4
     depends_on:
       influxdb2:
         condition: service_healthy
@@ -101,7 +113,7 @@ services:
       redis:
         condition: service_healthy
       load_automaton:
-        condition: service_started
+        condition: service_healthy
 
   store_automaton:
     image: store_automaton
@@ -115,6 +127,12 @@ services:
       - "3033:3033"
     env_file:
       - .env
+    healthcheck:
+      test: curl localhost:3033/health | grep 'Healthy!' || exit 1
+      start_period: 5s
+      interval: 15s
+      timeout: 10s
+      retries: 4
     depends_on:
       influxdb2:
         condition: service_healthy
@@ -123,7 +141,7 @@ services:
       mongodb:
         condition: service_healthy
       parse_automaton:
-        condition: service_started
+        condition: service_healthy
 
   grafana:
       image: grafana/grafana
@@ -156,4 +174,4 @@ services:
       mongodb:
         condition: service_healthy
       store_automaton:
-        condition: service_started
+        condition: service_healthy

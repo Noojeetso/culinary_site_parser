@@ -72,6 +72,7 @@ impl StoreAutomaton {
 
     async fn message_loop(&self, mut messages_rx: UnboundedReceiver<ConsumerMessage>) {
         println!("[worker] entering message handler loop");
+        HEALTHY.store(1, Ordering::Relaxed);
         while let Some(message) = messages_rx.recv().await {
             let message_properties = message.basic_properties.unwrap();
             let message_id = message_properties.message_id().unwrap();
