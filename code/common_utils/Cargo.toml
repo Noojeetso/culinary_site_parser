@@ -1,0 +1,15 @@
+[package]
+name = "common_utils"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+anyhow.workspace = true
+amqprs.workspace = true
+serde.workspace = true
+chrono.workspace = true
+influxdb2.workspace = true
+tokio.workspace = true
+futures.workspace = true
+redis.workspace = true
+mongodb.workspace = true

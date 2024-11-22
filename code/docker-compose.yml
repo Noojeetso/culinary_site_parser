@@ -1,0 +1,159 @@
+services:
+  redis:
+    image: redis/redis-stack:latest
+    container_name: redis_container
+    hostname: "redis"
+    domainname: "redis"
+    ports:
+      - "6379:6379"
+      - "8001:8001"
+    env_file:
+      - .env
+    volumes:
+      - /data/redisdata:/data
+    healthcheck:
+      test: [ "CMD", "redis-cli", "--raw", "incr", "ping" ]
+
+  rabbitmq:
+    image: rabbitmq:3-management-alpine
+    container_name: rabbitmq_container
+    hostname: "rabbitmq"
+    domainname: "rabbitmq"
+    volumes:
+        - /data/rabbitmqdata:/var/lib/rabbitmq
+        - /data/rabbitmqlog:/var/log/rabbitmq
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    env_file:
+      - .env
+    healthcheck:
+      test: rabbitmq-diagnostics check_port_connectivity
+
+  influxdb2:
+    image: influxdb:2
+    container_name: influxdb_container
+    hostname: "influxdb"
+    domainname: "influxdb"
+    ports:
+      - "8086:8086"
+    volumes:
+      - /data/influxdb2-data:/var/lib/influxdb2
+      - /data/influxdb2-config:/etc/influxdb2
+    healthcheck:
+      test: influx ping || exit 1
+
+  mongodb:
+    image: mongo:latest
+    container_name: mongodb_container
+    hostname: "mongodb"
+    domainname: "mongodb"
+    volumes: 
+      - /data/mongodbdata:/data/db
+    ports:
+      - "27017:27017"
+    env_file:
+      - .env
+    environment:
+      MONGO_REPLICA_HOST: mongodb
+    healthcheck:
+        test: echo 'db.runCommand("ping").ok' | mongosh localhost:27017/test --quiet
+
+  load_automaton:
+    image: load_automaton
+    container_name: load_automaton_container
+    build:
+      context: ./
+      dockerfile: Dockerfile
+      target: load_automaton
+    restart: unless-stopped
+    ports:
+      - "3031:3031"
+    env_file:
+      - .env
+    environment:
+      RUST_BACKTRACE: 1
+    depends_on:
+      influxdb2:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+  parse_automaton:
+    image: parse_automaton
+    container_name: parse_automaton_container
+    build:
+      context: ./
+      dockerfile: Dockerfile
+      target: parse_automaton
+    restart: unless-stopped
+    ports:
+      - "3032:3032"
+    env_file:
+      - .env
+    depends_on:
+      influxdb2:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      load_automaton:
+        condition: service_started
+
+  store_automaton:
+    image: store_automaton
+    container_name: store_automaton_container
+    build:
+      context: ./
+      dockerfile: Dockerfile
+      target: store_automaton
+    restart: unless-stopped
+    ports:
+      - "3033:3033"
+    env_file:
+      - .env
+    depends_on:
+      influxdb2:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+      mongodb:
+        condition: service_healthy
+      parse_automaton:
+        condition: service_started
+
+  grafana:
+      image: grafana/grafana
+      hostname: "grafana"
+      domainname: "grafana"
+      container_name: grafana
+      restart: unless-stopped
+      ports:
+        - "3000:3000"
+      volumes:
+        - ./grafana_dashboard:/var/lib/grafana
+
+  web_server: 
+    image: web_server
+    container_name: web_server_container
+    build:
+      context: ./
+      dockerfile: Dockerfile
+      target: web_server
+    restart: unless-stopped
+    ports:
+      - "3030:3030"
+    env_file:
+      - .env
+    depends_on:
+      influxdb2:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+      mongodb:
+        condition: service_healthy
+      store_automaton:
+        condition: service_started

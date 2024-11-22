@@ -1,0 +1,6 @@
+**/target
+**/target
+Dockerfile
+.dockerignore
+grafana_dashboard
+!grafana_dashboard/grafana.db

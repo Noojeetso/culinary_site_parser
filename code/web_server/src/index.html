@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <title>Reciper</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            background-color: #f0f0f0;
+        }
+
+        div {
+            margin-bottom: 20px;
+        }
+
+        ul {
+            white-space: nowrap;
+            display: inline-block;
+            justify-content: space-around;
+            list-style-type: none;
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            overflow: hidden;
+            background-color: #333;
+            margin-bottom: 10vh;
+        }
+
+        li {
+            display: inline-block;
+            border-right: 1px solid #bbb;
+        }
+
+        li:last-child {
+            border-right: none;
+        }
+
+        li a {
+            width: 100%;
+            box-sizing: border-box;
+            display: flex;
+            justify-content: center;
+            color: white;
+            text-align: center;
+            padding: 14px 16px;
+            text-decoration: none;
+        }
+
+        li a:hover:not(.active) {
+            background-color: #111;
+        }
+
+        .form-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .text-input {
+            padding: 10px;
+            font-size: 16px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            margin-right: 10px;
+        }
+
+        .submit-button {
+            padding: 10px 20px;
+            margin-right: 10px;
+            font-size: 16px;
+            color: white;
+            background-color: #007bff;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        .submit-button:hover:not([disabled]) {
+            background-color: #0056b3;
+        }
+
+        .submit-button:active:not([disabled]) {
+            background-color: #0056b3;
+            transform: scale(0.9);
+        }
+
+        .submit-button:disabled,
+        .submit-button[disabled] {
+            border: 1px solid #999999;
+            background-color: #cccccc;
+            color: #666666;
+        }
+
+        .submit-button[disabled]:hover {
+            cursor: default;
+        }
+    </style>
+</head>
+
+<body>
+    <center>
+        <ul>
+            <li><a style="cursor:pointer;"
+                    onclick="window.open('http://localhost:3000/d/a6983b11-d7b5-4382-bdeb-9c8a3bc4b665/influxdb-statistics?orgId=1');">Grafana</a>
+            </li>
+            <li> <a style="cursor:pointer;" onclick="window.open('http://localhost:15672/');">RabbitMQ</a>
+            </li>
+            <li><a style="cursor:pointer;" onclick="window.open('http://localhost:8001/redis-stack/browser');">Redis</a>
+            </li>
+            <li><a style="cursor:pointer;" onclick="window.open('http://localhost:8086');">InfluxDB</a></li>
+        </ul>
+
+        <h1>URL to start from</h1>
+        <div class="form-container">
+            <input type="text" size="30" class="text-input" id="start_url" placeholder="https://www.path.to/start">
+            <button class="submit-button" id="start_parsing_exclamation_mark">Start parsing!</button>
+        </div>
+
+        <h1>Limit the number of loading pages</h1>
+        <div id="current_limit">
+            Current limit: 0 (no restrictions)
+        </div>
+        <div class="form-container">
+            <input type="number" step="1" size="20" class="text-input" id="download_amount_limit" placeholder="">
+            <button class="submit-button" id="set_download_amount_limit">Set limit</button>
+        </div>
+
+        <h1>Excluded paths</h1>
+        <div id="excluded_paths">
+        </div>
+        <div class="form-container">
+            <input type="text" size="30" class="text-input" id="new_excluded_path"
+                placeholder="https://www.path.to/exclude">
+            <button class="submit-button" id="exclude_path">Exclude</button>
+        </div>
+    </center>
+
+    <script type="text/javascript">
+        const start_parsing_exclamation_mark_button = document.getElementById('start_parsing_exclamation_mark');
+        const current_limit = document.getElementById('current_limit');
+        const download_amount_limit = document.getElementById('download_amount_limit');
+        const set_download_amount_limit_button = document.getElementById('set_download_amount_limit');
+        const excluded_paths = document.getElementById('excluded_paths');
+        const new_excluded_path = document.getElementById('new_excluded_path');
+        const exclude_path_button = document.getElementById('exclude_path');
+        const uri = 'ws://localhost:3030/ws';
+        const ws = new WebSocket(uri);
+
+        function add_excluded_link(data) {
+            const line = document.createElement('p');
+            line.innerText = data;
+            excluded_paths.appendChild(line);
+        }
+
+        ws.onopen = function () {
+        };
+
+        ws.onmessage = function (msg) {
+            const data = msg.data;
+            console.log('recvd: \'' + data + '\'');
+            if (data == "state: working") {
+                console.log("am i here 1??")
+                start_parsing_exclamation_mark_button.setAttribute("disabled", true);
+                exclude_path_button.setAttribute("disabled", true);
+            } else if (data == "state: idling") {
+                console.log("am i here 2??")
+                start_parsing_exclamation_mark_button.removeAttribute("disabled");
+                exclude_path_button.removeAttribute("disabled");
+            } else if (data.startsWith("Current limit")) {
+                console.log("am i here 3??")
+                current_limit.innerText = data;
+            } else {
+                console.log("am i here 4??")
+                add_excluded_link(data);
+            }
+        };
+
+        ws.onclose = function () { };
+
+        exclude_path_button.onclick = function () {
+            const msg = "excluded: " + new_excluded_path.value;
+            ws.send(msg);
+            new_excluded_path.value = '';
+        };
+
+        start_parsing_exclamation_mark_button.onclick = function () {
+            const msg = "start_url: " + start_url.value;
+            ws.send(msg);
+        };
+
+        set_download_amount_limit_button.onclick = function () {
+            const msg = "set_limit: " + download_amount_limit.value;
+            ws.send(msg);
+        };
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,27 @@
+[package]
+name = "parse_automaton"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+select = "^0.6"
+sxd-xpath = "^0.4"
+sxd_html = "^0.1"
+regex = "^1.11"
+lazy_static = "^1.5"
+sxd-document = "^0.3"
+
+tokio.workspace = true
+anyhow.workspace = true
+amqprs.workspace = true
+colored.workspace = true
+url.workspace = true
+common_utils.workspace = true
+redis.workspace = true
+serde.workspace = true
+bincode.workspace = true
+warp.workspace = true
+futures.workspace = true
+dotenv.workspace = true
+chrono.workspace = true
+influxdb2.workspace = true

@@ -1,0 +1,21 @@
+[package]
+name = "web_server"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+tokio.workspace = true
+anyhow.workspace = true
+amqprs.workspace = true
+common_utils.workspace = true
+warp.workspace = true
+futures.workspace = true
+redis.workspace = true
+dotenv.workspace = true
+chrono.workspace = true
+influxdb2.workspace = true
+url.workspace = true
+reqwest.workspace = true
+tokio-stream.workspace = true
+futures-util.workspace = true
+# lazy_static.workspace = true
