@@ -39,6 +39,9 @@ svg-inkscape/
 *.bkp
 *.dtmp
 
-code/grafana_dashboard
-!code/grafana_dashboard/grafana.db
 Cargo.lock
+
+*
+!code
+!code/grafana_dashboard
+!code/grafana_dashboard/grafana.db
