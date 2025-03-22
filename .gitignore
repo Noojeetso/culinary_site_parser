@@ -1,19 +1,19 @@
-report
-report/*
-!report/
-!report/*.tex
-!report/biblio.bib
-!report/report.pdf
-!report/annex.pdf
-!report/inc
-!report/inc/csv
-!report/inc/csv/*
-!report/inc/img
-!report/inc/img/*
-!report/inc/lst
-!report/inc/lst/*
-!report/inc/src
-!main
+docs/*
+!docs/report.pdf
+docs/src/*
+!docs/src
+!docs/src/*.tex
+!docs/src/biblio.bib
+!docs/src/annex.pdf
+docs/src/inc
+!docs/src/inc
+!docs/src/inc/csv
+!docs/src/inc/csv/*
+!docs/src/inc/img
+!docs/src/inc/img/*
+!docs/src/inc/lst
+!docs/src/inc/lst/*
+!docs/src/inc/src
 
 .vscode
 target
@@ -41,7 +41,5 @@ svg-inkscape/
 
 Cargo.lock
 
-*
-!code
-!code/grafana_dashboard
+code/grafana_dashboard/*
 !code/grafana_dashboard/grafana.db
